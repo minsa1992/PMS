@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	
+	<!-- root-context.xml : web.xml 등록되어 있음 -->
+
+	<!-- 1) Data Source : DBOpen클래스(오라클) -->
+	
+	 <bean id="dataSource"
+		class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+		<property name="driverClass" value="oracle.jdbc.driver.OracleDriver"></property>
+		<property name="url" value="jdbc:oracle:thin:@211.238.144.220:1521:orcl"></property>
+		<property name="username" value="HANIL"></property>
+		<property name="password" value="HANIL"></property>
+	</bean>
+	
+	
+	<!-- 카페24 -->
+	
+	<!-- <bean id="dataSource" (카페24)
+		class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+			<property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/minsa1992"></property>
+			<property name="username" value="minsa1992"></property>
+			<property name="password" value="dlsvlsl92"></property>
+		</bean> -->
+		
+	<!-- 2) notice.xml를 스프링빈으로 주입받아 객체 생성 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- DTO역할이 가능한 클래스가 있는 경로 설정 -->
+		<!-- <property name="typeAliasesPackage" value="dev.blog.notice5,
+														   dev.mvc.member
+														   dev.mvc.code"></property>		 -->
+		<property name="typeAliasesPackage" value="co.kr.pms,co.kr.pms.list,co.kr.pms.brequest,co.kr.pms.user"></property>
+		
+		<!-- 매핑할 xml파일(mapper)이 있는 패키지 경로를 설정한다. -->
+		<property name="mapperLocations" value="classpath*:co/kr/pms/**/*.xml"></property>
+	</bean>
+
+	<!-- 3) 2)에서 생성된 스프링빈을 이용해서 SQL 실행객체 생성 
+			PrepareStatement
+			-->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+	<!-- 생성자함수 호출 -->
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"></constructor-arg>
+	</bean>
+		
+</beans>
