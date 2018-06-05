@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace="팩키지명+인터페이스"가 와야 함
+	 interface NoticeMapper{} -->
+	
+<mapper namespace="co.kr.pms.PmsAdminMapper">
+	
+	<select id="login" parameterType="co.kr.pms.PmsAdminDTO" resultType="co.kr.pms.PmsAdminDTO">
+		<![CDATA[
+		SELECT admin_id, password
+		FROM tbl_admin
+		WHERE admin_id = #{admin_id } and password = #{password }
+		]]>
+	</select>
+	
+	<select id="admin" resultType="co.kr.pms.PmsAdminDTO" parameterType="String">
+	<![CDATA[
+		SELECT admin_id, password, admin_name, email, division_code, position_name
+		FROM tbl_admin
+		WHERE admin_id = #{admin_id }
+	]]>
+	</select>
+	
+	<update id="adminupdate" parameterType="co.kr.pms.PmsAdminDTO">
+	<![CDATA[
+		UPDATE tbl_admin
+		SET password = #{password }, admin_name = #{admin_name }, email = #{email }, division_code = #{division_code }, position_name = #{position_name } 
+		WHERE admin_id = #{admin_id }
+	]]>
+	</update>
+	
+	
+</mapper>

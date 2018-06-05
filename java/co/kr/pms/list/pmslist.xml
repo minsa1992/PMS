@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace="팩키지명+인터페이스"가 와야 함
+	 interface NoticeMapper{} -->
+
+<mapper namespace="co.kr.pms.list.PmsListMapper">
+	
+	
+	<!--관리자 물품 리스트 출력 -->
+	<select id="list" resultType="co.kr.pms.list.PmsListDTO">
+	
+		SELECT product_id, product_name, product_location, stock, user_id, category
+		FROM tbl_product
+		WHERE delete_yn = 'N'
+		
+	</select>
+	
+	<!-- 관리자 물품 상세 보기 출력 -->
+	<select id="read" parameterType="co.kr.pms.list.PmsListDTO" resultType="co.kr.pms.list.PmsListDTO">
+	
+	<![CDATA[
+		SELECT product_id, product_name, stock, price, consumable, insert_date, update_date, user_id, 
+		brand, poster, product_location, category, usecount, use_yn, return_date
+		FROM tbl_product 
+		WHERE product_id = #{product_id }
+	]]>
+	
+	</select>
+	
+	<!-- 물품 등록 -->
+	<insert id="insert" parameterType="co.kr.pms.list.PmsListDTO">
+	
+		<selectKey keyProperty="product_id" resultType="int" order="BEFORE">
+		 		SELECT NVL(MAX(product_id),0)+1 as product_id FROM tbl_product
+		</selectKey>
+	
+	<![CDATA[
+		INSERT INTO tbl_product(product_id, product_name, stock, price, consumable, 
+		insert_date, user_id, brand, poster, product_location, category, update_date, usecount)
+		VALUES(#{product_id }, #{product_name }, #{stock }, #{price }, #{consumable }, sysdate, 'admin',
+		#{brand }, #{poster }, #{product_location }, #{category }, sysdate, 0)
+	]]>
+	
+	</insert>
+	
+	<!-- 사용자 물품 리스트 출력 -->
+	<select id="ulist" resultType="co.kr.pms.list.PmsListDTO">
+	
+	<![CDATA[
+		SELECT product_id, product_name, product_location, stock, poster, consumable, use_yn, return_date
+		FROM tbl_product
+		WHERE delete_yn = 'N'
+		ORDER BY usecount DESC
+		]]>
+		
+	</select> 
+	
+	<!-- 사용자 물품 검색 기능 -->
+	<select id="searchlist" parameterType="String" resultType="co.kr.pms.list.PmsListDTO">
+	
+	<![CDATA[
+		SELECT product_id, product_name, product_location, stock, poster, consumable, use_yn, return_date
+		FROM tbl_product
+		WHERE product_name like '%' ||  #{keyword } || '%'
+	]]>
+		
+	</select>
+	
+	<!-- 카테고리 검색 기능 -->
+	<select id="searchcategory" parameterType="String" resultType="co.kr.pms.list.PmsListDTO">
+	
+	<![CDATA[
+		SELECT product_id, product_name, product_location, stock, poster, consumable, use_yn, return_date
+		FROM tbl_product
+		WHERE category = (SELECT category_name FROM tbl_category WHERE category_id = #{category })
+	]]>
+		
+	</select>
+	
+	<!-- 물품 정보 수정 -->
+	<update id="update" parameterType="co.kr.pms.list.PmsListDTO">
+		
+	<![CDATA[
+		UPDATE tbl_product 
+		SET product_name = #{product_name }, stock = #{stock }, price = #{price }, consumable = #{consumable }, update_date = sysdate, 
+			brand = #{brand }, poster = #{poster }, category = #{category }, product_location = #{product_location }, use_yn = #{use_yn}
+		WHERE product_id = #{product_id }
+	]]>
+		
+	</update>
+	
+	<!-- 관리자 물품 상태 변경  -->
+	<update id="use_yn" parameterType="co.kr.pms.list.PmsListDTO">
+	
+	<![CDATA[
+		UPDATE tbl_product
+		SET return_date = sysdate
+		WHERE product_id = #{product_id }
+	]]>
+	
+	</update>
+	
+	<!-- 비품 사용시 -->
+	<update id="use1" parameterType="map">
+	
+	<![CDATA[
+		UPDATE tbl_product 
+		SET user_id = #{user_id }, update_date = sysdate, return_date = #{date }, usecount = usecount + 1
+		WHERE product_id = #{product_id }
+	]]>
+	
+	</update>
+	
+	<!-- 소모품 사용시 -->
+	<update id="use2" parameterType="map">
+	
+	<![CDATA[
+		UPDATE tbl_product SET stock = stock - #{use_num }, user_id = #{user_id }, update_date = sysdate, usecount = usecount + 1
+		WHERE product_id = #{product_id }
+	]]>
+	
+	</update>
+	
+	<!-- 물품 사용 여부 변경 -->
+	<update id="useyn" parameterType="Integer">
+	
+	<![CDATA[
+		UPDATE tbl_product
+		SET use_yn='n'
+		WHERE product_id = #{product_id}
+	]]>
+		
+	</update>
+	
+	<!-- 물품 삭제 -->
+	<update id="productDel" parameterType="co.kr.pms.list.PmsListDTO">
+		UPDATE tbl_product
+		SET delete_yn = 'Y'
+		WHERE product_id = #{product_id}
+	</update>
+	
+</mapper>

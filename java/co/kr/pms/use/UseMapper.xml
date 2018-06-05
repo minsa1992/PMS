@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.kr.pms.use.UseMapper">
+
+	<!-- 관리자 페이지 사용 요청 리스트 출력 -->
+	<select id="useList" parameterType="co.kr.pms.use.UseDTO" resultType="co.kr.pms.use.UseDTO">
+	
+	<![CDATA[
+		--사용 요청 리스트 출력
+		(
+		SELECT u.use_id, p.product_name, us.user_id, us.user_name, u.use_date, u.return_date, u.use_reason, u.use_num
+		FROM tbl_use u, tbl_product p, tbl_user us
+		WHERE u.product_id=p.product_id AND u.user_id=us.user_id AND TO_DATE(u.use_date ,'YYYY-MM-DD') = TO_DATE(sysdate,'YYYY-MM-DD')
+		)
+		UNION
+		(
+		SELECT u.use_id, p.product_name, us.user_id, us.user_name, u.use_date, u.return_date, u.use_reason, u.use_num
+		FROM tbl_use u, tbl_product p, tbl_user us
+		WHERE u.product_id=p.product_id AND u.user_id=us.user_id AND TO_DATE(u.return_date ,'YYYY-MM-DD') >= TO_DATE(sysdate,'YYYY-MM-DD')
+		)
+		ORDER BY use_date DESC
+		]]>
+		
+	</select>
+
+	<!-- 비품 사용 신청 입력 -->
+	<insert id="use1Insert" parameterType="map">
+		<selectKey keyProperty="use_id" resultType="int" order="BEFORE">
+	 		SELECT NVL(MAX(use_id),111)+1 as use_id 
+	 		FROM tbl_use
+		</selectKey>
+		
+		--비품 사용 신청 입력
+		<![CDATA[
+		INSERT INTO tbl_use (use_id, product_id, user_id, use_reason, use_date, return_date, use_num)
+		VALUES (#{use_id}, #{product_id}, #{user_id}, #{use_reason}, sysdate, #{time}, 1)
+		]]>
+	</insert>
+
+	<!-- 소모품 사용 신청 입력 -->
+	<insert id="use2Insert" parameterType="map">
+		<selectKey keyProperty="use_id" resultType="int" order="BEFORE">
+	 		SELECT NVL(MAX(use_id),111)+1 as use_id 
+	 		FROM tbl_use
+		</selectKey>	
+		--소모품 사용 신청 입력
+		<![CDATA[
+		INSERT INTO tbl_use (use_id, product_id, user_id, use_num, use_reason, use_date)
+		VALUES (#{use_id}, #{product_id}, #{user_id}, #{use_num}, #{use_reason}, sysdate)
+		]]>
+	</insert>
+	
+	<!-- 마이페이지 물품 사용 내역 -->
+	<select id="userUseList" parameterType="co.kr.pms.use.UseDTO" resultType="co.kr.pms.use.UseDTO">
+	<![CDATA[
+		SELECT p.product_name, u.use_date, u.return_date, u.use_num
+		FROM tbl_use u, tbl_product p
+		WHERE (p.product_id=u.product_id AND u.user_id=#{user_id} AND u.use_date >= TO_CHAR(SYSDATE-7,'YYYY-MM-DD'))
+			OR (p.product_id=u.product_id AND u.user_id=#{user_id} AND u.return_date >= TO_CHAR(SYSDATE-7,'YYYY-MM-DD'))
+		ORDER BY u.use_date DESC
+	]]>
+	</select>
+	
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace="팩키지명+인터페이스"가 와야 함
+	 interface NoticeMapper{} -->
+
+<mapper namespace="co.kr.pms.brequest.PmsBuyMapper">
+	
+	<!-- 구매 요청 리스트 -->
+	<select id="list" resultType="co.kr.pms.brequest.PmsBuyDTO">
+	<![CDATA[
+		SELECT product_name, product_result, insert_date, user_id, request_id
+		FROM tbl_request
+	]]>
+	</select>
+	
+	<!-- 구매 요청 상세 보기 -->
+	<select id="read" resultType="co.kr.pms.brequest.PmsBuyDTO" parameterType="co.kr.pms.brequest.PmsBuyDTO">
+	<![CDATA[
+		SELECT request_id, product_name, product_num, request_reason, product_url, insert_date, user_id, product_result
+		FROM tbl_request
+		WHERE request_id = #{request_id }
+	]]>
+	</select>
+	
+	<!-- 구매 요청 등록 -->
+	<insert id="insert" parameterType="co.kr.pms.brequest.PmsBuyDTO">
+	
+		<selectKey keyProperty="request_id" resultType="int" order="BEFORE">
+	 		SELECT NVL(MAX(request_id),0)+1 as request_id FROM tbl_request
+			<!--  SELECT ifnull(MAX(noticeno),0)+1 from notice5 as TB(mysql) -->
+		</selectKey>
+		<![CDATA[
+		INSERT INTO tbl_request(request_id, product_name, product_num, request_reason, product_url, insert_date, user_id, product_result)
+		VALUES(#{request_id }, #{product_name }, #{product_num }, #{request_reason }, #{product_url }, sysdate, #{user_id }, #{product_result })
+		]]>
+	</insert>
+	
+	<!-- 구매 가능 여부 체크 -->
+	<update id="update" parameterType="co.kr.pms.brequest.PmsBuyDTO">
+	<![CDATA[
+		UPDATE tbl_request
+		SET product_result=#{product_result }
+		WHERE request_id = #{request_id }
+	]]>
+	</update>
+	
+	<!-- 마이페이지 구매 요청 리스트 출력 -->
+	<select id="userRequest" parameterType="co.kr.pms.brequest.PmsBuyDTO" resultType="co.kr.pms.brequest.PmsBuyDTO">
+		SELECT product_name, product_num, insert_date, product_result
+		FROM tbl_request
+		WHERE user_id = #{user_id} AND insert_date >= to_char(add_months(sysdate,-1),'yyyy-mm-dd')
+		ORDER BY insert_date DESC
+	</select>
+</mapper>

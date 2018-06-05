@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.kr.pms.history.HistoryMapper">
+
+	<!-- 물품 변경 이력 추가 -->
+	<insert id="historyIns" parameterType="co.kr.pms.list.PmsListDTO">
+		<selectKey keyProperty="history_id" resultType="int" order="BEFORE">
+	 		SELECT NVL(MAX(history_id),000000)+1 as history_id 
+	 		FROM tbl_history
+		</selectKey>
+		<![CDATA[
+		INSERT INTO tbl_history(history_id, product_id, change_code, stock, price, update_date, brand, product_location)
+		VALUES(#{history_id}, #{product_id}, #{change_code}, #{upStock}, #{price}, sysdate, #{brand}, #{product_location})
+		]]>
+	</insert>
+
+	<!-- 변경 구분 -->
+	<select id="updClassify" parameterType="co.kr.pms.history.HistoryDTO" resultType="Integer">
+	<![CDATA[
+		SELECT change_code
+		FROM tbl_history
+		WHERE history_id=#{history_id}
+		]]>
+	</select>
+
+	<!-- 히스토리 리스트 출력 -->
+	<select id="historyList" parameterType="co.kr.pms.history.HistoryDTO" resultType="co.kr.pms.history.HistoryDTO">
+		-- 히스토리 리스트 출력
+		<![CDATA[
+		(
+		SELECT u.use_date AS dated, p.product_name, u.use_num, '사용' AS classify,  p.product_location, p.brand, u.use_reason AS remarks, us.user_id, us.user_name, u.return_date, 7 AS change_code
+		FROM tbl_use u, tbl_product p,  tbl_user us
+		WHERE u.product_id=p.product_id and u.user_id=us.user_id
+		)
+		UNION ALL
+		(
+		SELECT insert_date AS dated, product_name, stock, '입고' AS classify, product_location, brand, remarks, user_id, user_id, return_date, 7 AS change_code
+		FROM tbl_product
+		)
+		UNION ALL
+		(
+		SELECT h.update_date AS dated, p.product_name, h.stock, 
+			CASE 
+				WHEN h.change_code=0 THEN '입고'
+				WHEN h.change_code=5 THEN '삭제'
+				ELSE '변경'
+			END AS classify
+			, h.product_location, h.brand, p.remarks, p.user_id, p.user_id, p.return_date, h.change_code AS change_code
+		FROM tbl_history h, tbl_product p
+		WHERE p.product_id=h.product_id
+		)
+		ORDER BY dated DESC
+		]]>
+	</select>
+	
+</mapper>

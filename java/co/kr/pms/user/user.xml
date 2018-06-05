@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace="팩키지명+인터페이스"가 와야 함
+	 interface NoticeMapper{} -->
+
+<mapper namespace="co.kr.pms.user.PmsUserMapper">
+	
+	<!-- 사용자 계정 생성 -->
+	<insert id="create" parameterType="co.kr.pms.user.PmsUserDTO">
+		<![CDATA[
+		INSERT INTO tbl_user(user_id, password, user_name, email, division_code, position_name, insert_date)
+		VALUES(#{user_id }, #{password }, #{user_name}, #{email }, #{division_code }, #{position_name }, sysdate)
+		]]>
+	</insert>
+	
+	<!-- 사용자 로그인 -->
+	<select id="login" parameterType="co.kr.pms.user.PmsUserDTO" resultType="co.kr.pms.user.PmsUserDTO">
+	
+	<![CDATA[
+		SELECT user_id, password
+		FROM  tbl_user
+		WHERE user_id = #{user_id } AND password = #{password }	
+	]]>
+		
+	</select>
+	
+	<!-- 마이페이지 정보 보기 -->
+	<select id="userInfo" parameterType="co.kr.pms.user.PmsUserDTO" resultType="co.kr.pms.user.PmsUserDTO">
+		--마이페이지 정보 보기
+		<![CDATA[
+		SELECT user_id, user_name, division_code, position_name
+		FROM tbl_user
+		WHERE user_id=#{user_id}
+		]]>
+	</select>
+	
+	<!-- 마이페이지 정보 수정 -->
+	<update id="mypageUpdate" parameterType="co.kr.pms.user.PmsUserDTO">
+		--회원 정보 수정
+		<![CDATA[
+		UPDATE tbl_user
+		SET
+			password=#{password},
+			division_code=#{division_code},
+			position_name=#{position_name}
+		WHERE user_id=#{user_id}
+		]]>
+	</update>
+	
+	<select id="check" parameterType="co.kr.pms.user.PmsUserDTO" resultType="java.lang.Integer">
+	<![CDATA[
+   		SELECT NVL(COUNT(*),0)
+    	FROM tbl_user 
+    	WHERE user_id=#{user_id }
+    	]]>
+	</select>
+	
+</mapper>

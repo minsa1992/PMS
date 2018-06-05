@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace="팩키지명+인터페이스"가 와야 함
+	 interface NoticeMapper{} -->
+	 
+
+<mapper namespace="co.kr.pms.notice.PmsNoticeMapper">
+
+	<!-- 공지사항 입력 -->
+	<insert id="create" parameterType="co.kr.pms.notice.PmsNoticeDTO">
+	
+	<selectKey keyProperty="noticeid" resultType="int" order="BEFORE">
+	 		SELECT NVL(MAX(notice_id),0)+1 as notice_id FROM tbl_notice
+			<!--  SELECT ifnull(MAX(noticeno),0)+1 from notice5 as TB(cafe24) -->
+		</selectKey>
+	
+	<![CDATA[
+		INSERT INTO tbl_notice(notice_id, title, text, rdate)
+		VALUES(#{noticeid }, #{title }, #{text }, sysdate)
+	]]>
+	
+	</insert>
+	
+	<!-- 공지사항 목록 출력 -->
+	<select id="list" resultType="co.kr.pms.notice.PmsNoticeDTO">
+	
+		SELECT notice_id, title, text, rdate
+		FROM tbl_notice
+		
+	</select>
+	
+	<!-- 공지사항 내용 상세보기 -->
+	<select id="read" parameterType="int" resultType="co.kr.pms.notice.PmsNoticeDTO">
+	
+	<![CDATA[
+		SELECT notice_id, title, text, rdate
+		FROM tbl_notice
+		WHERE notice_id = #{notice_id }
+	]]>
+		
+	</select>
+	
+	<!-- 공지사항 내용 수정 -->
+	<update id="update" parameterType="co.kr.pms.notice.PmsNoticeDTO">
+	
+	<![CDATA[
+		UPDATE tbl_notice 
+		SET title=#{title }, text=#{text }, rdate = sysdate
+		WHERE notice_id = #{notice_id }
+	]]>
+		
+	</update>
+	
+	<!-- 공지사항 삭제 -->
+	<delete id="delete" parameterType="co.kr.pms.notice.PmsNoticeDTO">
+	
+	<![CDATA[
+		DELETE FROM tbl_notice WHERE notice_id = #{notice_id }
+	]]>
+	
+	</delete>
+	
+	<!-- 사용자 페이지에서 공지사항 출력 -->
+	<select id="lastest" resultType="co.kr.pms.notice.PmsNoticeDTO">
+	
+	<![CDATA[
+		SELECT notice_id, title, text, rdate
+		FROM tbl_notice
+		WHERE rdate = (SELECT MAX(rdate) as rdate FROM tbl_notice)
+	]]>
+	
+	</select> 
+	
+	
+</mapper>
